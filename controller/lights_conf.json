@@ -1,0 +1,10 @@
+{
+    "lights": [
+        {"led":"skull", "source": "netio", "brightness": "100", "color": "#0071c5"},
+        {"led":"eyes", "source": "hddio", "brightness": "100", "color": "#ff0000"},
+        {"led":"button", "source": "power", "brightness": "100", "color": "#ffffff"},
+        {"led":"f1", "source": "hddio", "brightness": "100", "color": "#ff0000"},
+        {"led":"f2", "source": "netio", "brightness": "100", "color": "#0071c5"},
+        {"led":"f3", "source": "power_limit", "brightness": "100", "color": "#ffffff"} 
+    ]
+}

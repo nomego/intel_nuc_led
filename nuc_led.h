@@ -47,7 +47,7 @@ MODULE_PARM_DESC(nuc_led_uid, "default owner of /proc/acpi/nuc_led");
 MODULE_PARM_DESC(nuc_led_gid, "default owning group of /proc/acpi/nuc_led");
 
 /* Intel NUC WMI GUID */
-#define NUCLED_WMI_MGMT_GUID "8C5DA44C-CDC3-46b3-8619-4E26D34390B7"
+#define NUCLED_WMI_MGMT_GUID "8C5DA44C-CDC3-46B3-8619-4E26D34390B7"
 MODULE_ALIAS("wmi:" NUCLED_WMI_MGMT_GUID);
 
 /* LED Control Method ID */

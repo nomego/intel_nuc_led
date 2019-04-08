@@ -1,16 +1,17 @@
-obj-m := nuc_led.o
-
-KVERSION := $(shell uname -r)
-KDIR := /lib/modules/$(KVERSION)/build
-PWD := $(shell pwd)
+ifneq ($(KERNELRELEASE),)
+       obj-m := nuc_led.o
+else
+       KVERSION := $(shell uname -r)
+       KDIR := /lib/modules/$(KVERSION)/build
+       PWD := $(shell pwd)
 
 .PHONY: clean default dkms-add dkms-build dkms-deb dkms-install dkms-rpm dkms-uninstall install
 
-clean:
-	$(MAKE) -C $(KDIR) M=$(PWD) clean
-
 default:
 	$(MAKE) -C $(KDIR) M=$(PWD) modules
+
+clean:
+	$(MAKE) -C $(KDIR) M=$(PWD) clean
 
 dkms-add:
 	dkms add --force $(PWD)
@@ -37,7 +38,6 @@ dkms-uninstall:
 
 install:
 	$(MAKE) -C $(KDIR) M=$(PWD) modules_install
-	@depmod -a $(KVERSION)
 
 rebuild:
 	-rmmod nuc_led
@@ -45,4 +45,4 @@ rebuild:
 	${MAKE} dkms-install
 	modprobe nuc_led
 	cat /proc/acpi/nuc_led
-
+endif

@@ -564,10 +564,11 @@ static ssize_t acpi_proc_read(struct file *filp, char __user *buff,
 	ssize_t ret;
 
 	int i, len = 0;
+	int num_leds = 0;
 	// Clear buffer
 	memset(result_buffer, 0, BUFFER_SIZE);
 
-	int num_leds = nuc_led_get_leds();
+	num_leds = nuc_led_get_leds();
 
 	for (i = 0; i < num_leds; i++) {
 		print_led(&leds[i]);

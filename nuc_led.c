@@ -302,7 +302,7 @@ static ssize_t acpi_proc_write(struct file *filp, const char __user *buff,
 	int i = 0;
 	int ret = 0;
 	char *input, *arg, *sep;
-	static int status = 0;
+	//static int status = 0;
 	u8 action, led_id, indicator_id, indicator_setting, setting_value;
 
 	// Move buffer from user space to kernel space

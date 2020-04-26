@@ -1,6 +1,9 @@
 /*
  * Intel NUC NUC8i7HVK (Hades) LED Control WMI Driver
  *
+ * Copyright (C) 2020 Benjamin Vialle <benjamin@vialle.io>
+ *
+ * Forked from intel_nuc_led (https://github.com/nomego/intel_nuc_led)
  * Copyright (C) 2018 Patrik Kullman
  *
  * Forked from intel_nuc_led (https://github.com/milesp20/intel_nuc_led)

@@ -2,11 +2,10 @@
 
 # Script by Jessica (TammyJess)
 # https://github.com/TammyJess
-# version 0.1.2
+# version 0.1.3
 
 import argparse
 import subprocess
-
 
 def value0_100(string):
   try: value = int(string)
@@ -49,22 +48,23 @@ def value0_2(string):
   return value
 
 parser = argparse.ArgumentParser(prog="nucLED",add_help=False, \
-  usage='%(prog)s led mode [-c \'#rrggbb\'] [-b brightness] [-t blink_type] [-f blink_freq] [--hdd mode] [--lan mode] [--scheme mode] [-e] [-h] [-v]', \
-  description='A script to set the LEDs on Intel NUC 8i7-HNK boxen, requires the nuc_led kernel module. Load it with \
-  \'modprobe nuc_led nuc_led_perms=0777\' to let all users control it, otherwise must be root user')
+  usage='%(prog)s led mode [options]...', \
+  epilog='This script sets the LEDs on the Intel NUC 8i7-HVK and -HNK boxen and requires the nuc_led kernel module. Load it with \'modprobe nuc_led nuc_led_perms=0777\' to let all users control it, otherwise use \'sudo\' or \'su -\'')
 parser.add_argument("led", metavar='led', choices=['skull','eyes','button','led1','led2','led3'], help="Specify the LED [skull|eyes|button|led1|led2|led3]") 	# naming it "led"
-parser.add_argument("trigger", metavar='mode', choices=['pwr','hdd','eth','wifi','limit','off'], help="Set the mode [pwr|hdd|eth|wifi|limit|off]") 
+parser.add_argument("trigger", metavar='mode', choices=['pwr','hdd','eth','wifi','limit','off'], help="Set the mode [pwr|hdd|eth|wifi|limit|off]")
 parser.add_argument("-c","--colour", metavar='', help="Specify colour (use \'#rrggbb\')") 	# naming it "colour"
 parser.add_argument("-b","--bright", metavar='', type=value0_100, help="Specify brightness percentage [0..100]")
 parser.add_argument("-t","--type", metavar='', choices=['solid','flash','strobe','pulse'], help="Specify blinking type [solid|flash|pulse|strobe]")
 parser.add_argument("-f","--freq", metavar='', type=value1_10, help="Specify blinks per 10 seconds [1..10]")
+parser.add_argument("-S3", dest='pwrS3',action='store_true', help="Settings apply to the S3 power-mode")
 parser.add_argument("--hdd", metavar='', type=value0_1, help="For HDD activity indication: 0=normally off, 1=normally on")
 parser.add_argument("--lan", metavar='', type=value0_2, help="For Lan activity indication: 0=lan1, 1=lan2, 2=Lan1+Lan2")
 parser.add_argument("--scheme", metavar='', type=value0_1, help="For Power-Limit indication: scheme 0=green to red, 1=single colour")
 parser.add_argument("-e", dest='echo',action='store_true', help="Use tee to include echoing commands to the terminal")
+parser.add_argument("-p", dest='pretend',action='store_true', help="Pretend mode")
 
 
-parser.add_argument("-v","--version", action='version', version='%(prog)s 0.1.2')
+parser.add_argument("-v","--version", action='version', version='%(prog)s 0.1.3')
 parser.add_argument("-h","--help", action='help', help="show this help message and exit")
 
 args=parser.parse_args()
@@ -91,11 +91,14 @@ elif args.trigger == 'limit': active_dict = limit_dict
 elif args.trigger == 'off': active_dict = off_dict
 
 #Initialise all the cmd vars, whether they are all needed or not
-led_cmd0 = led_cmd1 = led_cmd2 = led_cmd3 = led_cmd4 = led_cmd5 = led_cmd6 = led_cmd7 = ''
+led_cmd0 = led_cmd1 = led_cmd2 = led_cmd3 = led_cmd4 = led_cmd5 = ''
 
-if args.echo:
-  # print("Echo flag is set")
-  echo_str=" | tee "
+# pwr indicator
+# s0 is 0~5, s3 state is 6~11, Ready state is 12~17, s5 state is 18~23. Only s0 & s3 seems supported by hardware
+if args.pwrS3: offset=6
+else: offset=0
+
+if args.echo: echo_str=" | tee "
 else: echo_str=" > "
 
 #always want to set the LED & trigger first, otherwise the other arguments may not be appropriate, nor in the right field
@@ -104,18 +107,18 @@ led_cmd0=('echo "set_indicator,{led},{trigger}"' +  echo_str + '/proc/acpi/nuc_l
   trigger=trigger_dict[args.trigger])
 
 #Brightness is the most common feature to all triggers
-#If bright passed and trigger != off 
+#If bright passed and trigger != off
 if args.bright != None and args.trigger != 'off':
   led_cmd1=('&& echo "set_indicator_value,{led},{trigger},{bright_bit},{value}"' +  echo_str + '/proc/acpi/nuc_led \\\n').format(
     led=led_dict[args.led],trigger=trigger_dict[args.trigger],
-    bright_bit=active_dict['bright'],
+    bright_bit=active_dict['bright']+offset,
     value=args.bright)
 
 #Colour is the next most common feature
 #If colour passed and trigger != off.  NB: Spec seems to suggest that Power Limit Indicator only supports colour in Single Colour mode
 if args.colour != None and args.trigger != 'off':
   # sanity check on colour, value should be between 0 and 0xFFFFFF, string passed should start with #, and be 7chars long
-  if len(args.colour) != 7 or args.colour[0] !='#': 
+  if len(args.colour) != 7 or args.colour[0] !='#':
     print("Colour passed is invalid - wrong length or does not start with \'#\'. Colour should be specified as #rrggbb")
     exit()
   else:
@@ -132,9 +135,9 @@ if args.colour != None and args.trigger != 'off':
     '&& echo "set_indicator_value,{led},{trigger},{green_bit},{green_value}"' +  echo_str + '/proc/acpi/nuc_led \\\n'
     '&& echo "set_indicator_value,{led},{trigger},{blue_bit},{blue_value}"' +  echo_str + '/proc/acpi/nuc_led \\\n').format(
     led=led_dict[args.led],trigger=trigger_dict[args.trigger],
-    red_bit=active_dict['red'],
-    green_bit=active_dict['green'],
-    blue_bit=active_dict['blue'],
+    red_bit=active_dict['red']+offset,
+    green_bit=active_dict['green']+offset,
+    blue_bit=active_dict['blue']+offset,
     red_value = red,
     green_value = green,
     blue_value = blue)
@@ -145,15 +148,15 @@ if args.trigger == 'pwr' or args.trigger == 'soft':
   if args.type != None:
     led_cmd3=('&& echo "set_indicator_value,{led},{trigger},{blink_bit},{blink_value}"' +  echo_str + '/proc/acpi/nuc_led \\\n').format(
     led=led_dict[args.led],trigger=trigger_dict[args.trigger],
-    blink_bit=active_dict['behavior'],
+    blink_bit=active_dict['behavior']+offset,
     blink_value = flash_dict[args.type])
   if args.freq != None:
     led_cmd4=('&& echo "set_indicator_value,{led},{trigger},{freq_bit},{freq_value}"' +  echo_str + '/proc/acpi/nuc_led \\\n').format(
     led=led_dict[args.led],trigger=trigger_dict[args.trigger],
-    freq_bit=active_dict['frequency'],
+    freq_bit=active_dict['frequency']+offset,
     freq_value = args.freq)
 
-# Now the special cases... 
+# Now the special cases...
 # limit has a scheme
 if args.trigger == 'limit' and args.scheme != None:
     led_cmd5=('&& echo "set_indicator_value,{led},{trigger},{scheme_bit},{scheme_value}"' +  echo_str + '/proc/acpi/nuc_led \\\n').format(
@@ -167,7 +170,7 @@ if args.trigger == 'eth' and args.lan != None:
     led=led_dict[args.led],trigger=trigger_dict[args.trigger],
     lan_bit=active_dict['lan'],
     lan_value = args.lan)
-  
+
 # hdd has options of ON|off or on|OFF
 if args.trigger == 'hdd' and args.hdd != None:
     led_cmd5=('&& echo "set_indicator_value,{led},{trigger},{hdd_bit},{hdd_value}"' +  echo_str + '/proc/acpi/nuc_led \\\n').format(
@@ -175,16 +178,10 @@ if args.trigger == 'hdd' and args.hdd != None:
     hdd_bit=active_dict['hdd'],
     hdd_value = args.hdd)
 
+final_cmd=led_cmd0 + led_cmd1 + led_cmd2 + led_cmd3 + led_cmd4 + led_cmd5
+if args.echo: final_cmd+='&& echo "Done!"'
 
-# pwr indicator
-# s3 state is 6~11, Ready state is 12~17, s5 state is 18~23
-
-
-final_cmd=led_cmd0 + led_cmd1 + led_cmd2 + led_cmd3 + led_cmd4 + led_cmd5 + led_cmd6
-#if args.echo: final_cmd+='&& echo "Done!"'
-#print(final_cmd);exit()
-process = subprocess.call(final_cmd, shell=True)
+if args.pretend: print(final_cmd)
+else: process = subprocess.call(final_cmd, shell=True)
 
 exit()
-
-

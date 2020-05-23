@@ -2,7 +2,7 @@
 
 # Script by Jessica (TammyJess)
 # https://github.com/TammyJess
-# version 0.1.3
+# version 0.1.4
 
 import argparse
 import subprocess
@@ -49,6 +49,7 @@ def value0_2(string):
 
 parser = argparse.ArgumentParser(prog="nucLED",add_help=False, \
   usage='%(prog)s led mode [options]...', \
+#  description='nucLED version 0.1.4', \
   epilog='This script sets the LEDs on the Intel NUC 8i7-HVK and -HNK boxen and requires the nuc_led kernel module. Load it with \'modprobe nuc_led nuc_led_perms=0777\' to let all users control it, otherwise use \'sudo\' or \'su -\'')
 parser.add_argument("led", metavar='led', choices=['skull','eyes','button','led1','led2','led3'], help="Specify the LED [skull|eyes|button|led1|led2|led3]") 	# naming it "led"
 parser.add_argument("trigger", metavar='mode', choices=['pwr','hdd','eth','wifi','limit','off'], help="Set the mode [pwr|hdd|eth|wifi|limit|off]")
@@ -60,12 +61,12 @@ parser.add_argument("-S3", dest='pwrS3',action='store_true', help="Settings appl
 parser.add_argument("--hdd", metavar='', type=value0_1, help="For HDD activity indication: 0=normally off, 1=normally on")
 parser.add_argument("--lan", metavar='', type=value0_2, help="For Lan activity indication: 0=lan1, 1=lan2, 2=Lan1+Lan2")
 parser.add_argument("--scheme", metavar='', type=value0_1, help="For Power-Limit indication: scheme 0=green to red, 1=single colour")
-parser.add_argument("-e", dest='echo',action='store_true', help="Use tee to include echoing commands to the terminal")
-parser.add_argument("-p", dest='pretend',action='store_true', help="Pretend mode")
+parser.add_argument("-v", dest='echo',action='store_true', help="Use tee to include echoing commands to the terminal")
+parser.add_argument("-p", dest='pretend',action='store_true', help="Pretend mode, prints the commands to be sent and then exits")
 
 
-parser.add_argument("-v","--version", action='version', version='%(prog)s 0.1.3')
 parser.add_argument("-h","--help", action='help', help="show this help message and exit")
+parser.add_argument("--version", action='version', version='%(prog)s 0.1.4')
 
 args=parser.parse_args()
 

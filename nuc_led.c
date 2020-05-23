@@ -121,6 +121,8 @@ static int nuc_led_fill_indicator_values(LED_INFO *led)
 	case NUCLED_USAGE_TYPE_POWER_LIMIT:
 		ssize = sizeof(struct power_limit_indicator);
 		break;
+	case NUCLED_USAGE_TYPE_DISABLE:
+		return 0;
 	default:
 		pr_warn("Unexpected indicator option %d\n",
 			led->indicator_option);

@@ -1,8 +1,11 @@
 /*
  * Intel NUC NUC8i7HVK (Hades) LED Control WMI Driver
  *
+ * Copyright (C) 2020 Benjamin Vialle <benjamin@vialle.io>
+ *
+ * Forked from intel_nuc_led (https://github.com/nomego/intel_nuc_led)
  * Copyright (C) 2018 Patrik Kullman
- * 
+ *
  * Forked from intel_nuc_led (https://github.com/milesp20/intel_nuc_led)
  * Copyright (C) 2017 Miles Peterson
  *
@@ -15,7 +18,7 @@
  *
  * Based on WMI Interface for Intel® NUC Products - WMI Specification, August 2018 rev 0.64
  * (specs/INTEL_WMI_LED_0.64.pdf)
- * 
+ *
  * Based on Intel Article ID 000023426
  * http://www.intel.com/content/www/us/en/support/boards-and-kits/intel-nuc-kits/000023426.html
  *

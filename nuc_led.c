@@ -1,6 +1,9 @@
 /*
  * Intel NUC NUC8i7HVK (Hades) LED Control WMI Driver
  *
+ * Copyright (C) 2020 Benjamin Vialle <benjamin@vialle.io>
+ *
+ * Forked from intel_nuc_led (https://github.com/nomego/intel_nuc_led)
  * Copyright (C) 2018 Patrik Kullman
  * 
  * Forked from intel_nuc_led (https://github.com/milesp20/intel_nuc_led)
@@ -38,13 +41,14 @@
 
 #include <linux/module.h>
 #include <linux/kernel.h>
+#include <linux/version.h>
 #include <linux/types.h>
 #include <linux/proc_fs.h>
 #include <linux/acpi.h>
 #include <linux/vmalloc.h>
 #include <linux/uaccess.h>
 
-MODULE_AUTHOR("Patrik Kullman");
+MODULE_AUTHOR("Benjamin Vialle");
 MODULE_DESCRIPTION("Intel NUC NUC8i7HVK (Hades) LED Control WMI Driver");
 MODULE_LICENSE("GPL");
 ACPI_MODULE_NAME("NUC_LED");
@@ -117,6 +121,8 @@ static int nuc_led_fill_indicator_values(LED_INFO *led)
 	case NUCLED_USAGE_TYPE_POWER_LIMIT:
 		ssize = sizeof(struct power_limit_indicator);
 		break;
+	case NUCLED_USAGE_TYPE_DISABLE:
+		return 0;
 	default:
 		pr_warn("Unexpected indicator option %d\n",
 			led->indicator_option);
@@ -302,7 +308,7 @@ static ssize_t acpi_proc_write(struct file *filp, const char __user *buff,
 	int i = 0;
 	int ret = 0;
 	char *input, *arg, *sep;
-	static int status = 0;
+	//static int status = 0;
 	u8 action, led_id, indicator_id, indicator_setting, setting_value;
 
 	// Move buffer from user space to kernel space
@@ -564,10 +570,11 @@ static ssize_t acpi_proc_read(struct file *filp, char __user *buff,
 	ssize_t ret;
 
 	int i, len = 0;
+	int num_leds = 0;
 	// Clear buffer
 	memset(result_buffer, 0, BUFFER_SIZE);
 
-	int num_leds = nuc_led_get_leds();
+	num_leds = nuc_led_get_leds();
 
 	for (i = 0; i < num_leds; i++) {
 		print_led(&leds[i]);
@@ -583,11 +590,18 @@ static ssize_t acpi_proc_read(struct file *filp, char __user *buff,
 	return ret;
 }
 
-static struct file_operations proc_acpi_operations = {
-	.owner = THIS_MODULE,
-	.read = acpi_proc_read,
-	.write = acpi_proc_write,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 6, 0)
+static struct proc_ops proc_acpi_operations = {
+        .proc_read = acpi_proc_read,
+        .proc_write = acpi_proc_write,
 };
+#else
+static struct file_operations proc_acpi_operations = {
+        .owner    = THIS_MODULE,
+        .read     = acpi_proc_read,
+        .write    = acpi_proc_write,
+};
+#endif
 
 /* Init & unload */
 static int __init init_nuc_led(void)

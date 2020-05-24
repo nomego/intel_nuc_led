@@ -1,6 +1,7 @@
 # DISCLAIMER
 
-Use at your own risk! In the event that your computer breaks due to use of this software, the author will not be held responisble for any damages caused!
+Use at your own risk! In the event that your computer breaks due to use of this software, the author will not
+be held responisble for any damages caused!
 
 # Intel NUC8i7HVK LED Control
 
@@ -9,7 +10,11 @@ This is a simple kernel module to control the LEDs on Intel NUC8i7HVK (Hades) ki
 This module is intended as a demonstration/proof-of-concept and may not be maintained further.  Perhaps
 it can act as a jumping off point for a more polished and complete implementation.  For testing and basic
 manipulation of the LEDs, it ought to work fine, but use with caution none the less. This
-has only been tested on 4.18 RC kernels.
+has only been tested on 5.6.x kernels.
+
+This kernel module was initially developed by Miles Peterson (https://github.com/milesp20/intel_nuc_led)
+for Intel NUC7i[x]BN and NUC6CAY LED Control, then forked for NIC8i[x]HVK LED control by Patrick Kullman
+ (https://github.com/nomego/intel_nuc_led).
 
 
 ## Requirements
@@ -51,7 +56,7 @@ yum install dkms
 ### 2. Fetching the module
 
 ```
-git clone https://github.com/nomego/intel_nuc_led
+git clone https://github.com/benjaminvialle/intel_nuc_led
 cd intel_nuc_led
 ```
 
@@ -105,7 +110,7 @@ sudo modprobe nuc_led
 
 
 ## Usage
-    
+
 This driver works via '/proc/acpi/nuc_led'.  To get current LED state:
 
 ```
@@ -115,7 +120,7 @@ cat /proc/acpi/nuc_led
 Sample output:
 ```
 LED 0 (Power) - Color type: RGB
-  Supported indicators: Power state  HDD Activity  Ethernet  Wifi  Software  Power Limit  Disable  
+  Supported indicators: Power state  HDD Activity  Ethernet  Wifi  Software  Power Limit  Disable
   Current indicator: Power state
 
         S0 (On): 50% Solid rgb(0,0,255) (10 dHz)
@@ -125,7 +130,7 @@ LED 0 (Power) - Color type: RGB
 
 
 LED 2 (Skull) - Color type: RGB
-  Supported indicators: Power state  HDD Activity  Ethernet  Wifi  Software  Power Limit  Disable  
+  Supported indicators: Power state  HDD Activity  Ethernet  Wifi  Software  Power Limit  Disable
   Current indicator: Power state
 
         S0 (On): 50% Solid rgb(10,0,255) (10 dHz)
@@ -135,7 +140,7 @@ LED 2 (Skull) - Color type: RGB
 
 
 LED 3 (Eyes) - Color type: RGB
-  Supported indicators: Power state  HDD Activity  Ethernet  Wifi  Software  Power Limit  Disable  
+  Supported indicators: Power state  HDD Activity  Ethernet  Wifi  Software  Power Limit  Disable
   Current indicator: Power state
 
         S0 (On): 50% Breathing rgb(255,0,0) (3 dHz)
@@ -145,21 +150,21 @@ LED 3 (Eyes) - Color type: RGB
 
 
 LED 4 (Front 1) - Color type: RGB
-  Supported indicators: Power state  HDD Activity  Ethernet  Wifi  Software  Power Limit  Disable  
+  Supported indicators: Power state  HDD Activity  Ethernet  Wifi  Software  Power Limit  Disable
   Current indicator: HDD Activity
 
   HDD LED: 50% rgb(255,0,0) Normally off, ON when active
 
 
 LED 5 (Front 2) - Color type: RGB
-  Supported indicators: Power state  HDD Activity  Ethernet  Wifi  Software  Power Limit  Disable  
+  Supported indicators: Power state  HDD Activity  Ethernet  Wifi  Software  Power Limit  Disable
   Current indicator: Wifi
 
   Wifi LED: 50% rgb(0,10,250)
 
 
 LED 6 (Front 3) - Color type: RGB
-  Supported indicators: Power state  HDD Activity  Ethernet  Wifi  Software  Power Limit  Disable  
+  Supported indicators: Power state  HDD Activity  Ethernet  Wifi  Software  Power Limit  Disable
   Current indicator: Power Limit
 
   Power Limit LED: Green to Red  50% rgb(0,0,255)
@@ -185,7 +190,7 @@ Example execution to set Front 2 LED (5) to Wifi indicator type (3):
 Example execution to set the Skull LED (2), Indicator type Power state (0), setting S0 RGB color red (3) to 10:
 
     echo 'set_indicator_value,2,0,3,10' | sudo tee /proc/acpi/nuc_led > /dev/null
-    
+
 Errors in passing parameters will appear as warnings in dmesg.
 **NOTE** Not all warnings are implemented and may send unsupported data, which can inactivate the LEDs (or worse!)
 
